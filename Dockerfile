@@ -1,5 +1,5 @@
 # Base image
-FROM nvidia/cuda:12.9.0-cudnn-devel-ubuntu24.04
+FROM nvidia/cuda:12.8.0-cudnn-devel-ubuntu22.04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common && \
@@ -49,6 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libharfbuzz-dev \
     python3 \
     python3-pip \
+    python3-venv \
     && rm -rf /var/lib/apt/lists/* 
 
 # Install SRT from source (latest version using cmake)
@@ -182,10 +183,14 @@ RUN mkdir -p ${WHISPER_CACHE_DIR}
 COPY requirements.txt .
 
 # Install Python dependencies, upgrade pip 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install openai-whisper && \
-    pip install jsonschema 
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install -r requirements.txt && \
+    /opt/venv/bin/pip install openai-whisper jsonschema
+
+# Set environment path for venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV WHISPER_MODEL="base"
 
 # Create the appuser 
 RUN useradd -m appuser 
