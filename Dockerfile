@@ -43,9 +43,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libtool \
     libfribidi-dev \
     libharfbuzz-dev \
-    python3 \
-    python3-pip \
-    python3-venv \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    python3.9 \
+    python3.9-dev \
+    python3.9-venv \
+    python3.9-distutils \
     && rm -rf /var/lib/apt/lists/* 
 
 # Install SRT from source (latest version using cmake)
@@ -179,14 +184,14 @@ RUN mkdir -p ${WHISPER_CACHE_DIR}
 COPY requirements.txt .
 
 # Install Python dependencies, upgrade pip 
-RUN python3 -m venv /opt/venv && \
+RUN python3.9 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install -r requirements.txt && \
-    /opt/venv/bin/pip install openai-whisper jsonschema ffmpeg-python torch 
+    /opt/venv/bin/pip install openai-whisper jsonschema ffmpeg-python torch
 
 # Set environment path for venv
 ENV PATH="/opt/venv/bin:$PATH"
-ENV WHISPER_MODEL="base"
+ENV WHISPER_MODEL="medium"
 
 RUN ffmpeg -version
 
